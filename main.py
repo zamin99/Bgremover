@@ -1,15 +1,14 @@
 import os
 import logging
+import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 import requests
-import replicate
 from io import BytesIO
 
 # ===== CONFIGURATION =====
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 REMOVE_BG_API_KEY = os.environ.get("REMOVE_BG_API_KEY", "F2RnX8kEWsjfoAoP1ezQfQgS")
-REPLICATE_API_TOKEN = os.environ.get("REPLICATE_API_TOKEN")  # Get from replicate.com
 REMOVE_BG_URL = "https://api.remove.bg/v1.0/removebg"
 
 CHANNEL_LINK = "https://t.me/ZAMINTRICKS"
@@ -20,46 +19,55 @@ DEV_URL = "https://t.me/SIGMAXZAMIN"
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ===== MESSAGES (Your Designs) =====
+# ===== WELCOME MESSAGE =====
 WELCOME_TEXT = """
 ╭━━━━━━━━━━━━━━━━━━━━━━╮
-      🚀 PRO IMAGE TOOLS
+      🚀 PRO BG REMOVER
 ╰━━━━━━━━━━━━━━━━━━━━━━╯
 
-➤ Choose a tool below to enhance your image!
-➤ AI-powered processing • Fast & Free
+➤ Send Any Image  
+➤ AI Detects Subject  
+➤ Background Removed Instantly  
+➤ Get Transparent HD PNG  
 
 ━━━━━━━━━━━━━━━━━━━━━━
-⚡ Colorize • RemoveBG • Restore • Upscale
+⚡ Fast • Clean • Professional
 ━━━━━━━━━━━━━━━━━━━━━━
 
 ➤ Type /help for commands
 """
 
+# ===== HELP MESSAGE =====
 HELP_TEXT = """
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           ⚡ HELP CENTER
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🤖 COMMANDS
-➜ /start  » Show main menu
-➜ /help   » View this help
+➜ /start  » Activate Bot
+➜ /help   » View Help Menu
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🛠️ AVAILABLE TOOLS
-➜ 🎨 Colorize – Add color to B&W photos
-➜ 🧹 RemoveBG – Remove image background
-➜ 🔄 Restore – Fix old/damaged photos (faces)
-➜ 📈 Upscale – Increase resolution 4x
+📸 HOW IT WORKS
+➜ Send any image
+➜ AI removes background
+➜ Get HD transparent PNG
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📸 HOW TO USE
-1️⃣ Click a tool button
-2️⃣ Send an image
-3️⃣ Wait for AI processing
-4️⃣ Get enhanced result
+🚀 FEATURES
+➜ Clean Edge Detection
+➜ Fast Processing
+➜ High-Quality Output
+➜ Secure & Private
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 REQUIREMENTS
+➜ Max Size: 20MB
+➜ Formats: JPG • PNG • WEBP
+➜ Use high-resolution images
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -70,59 +78,63 @@ HELP_TEXT = """
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
 
+# ===== BOT NETWORK MESSAGE =====
 BOT_NETWORK_TEXT = """
-╔══════════════════════════════╗
-║   🤖 **OFFICIAL BOT NETWORK**   ║
-║        DARK • CYBER • PRO      ║
-╠══════════════════════════════╣
-║ @CYBERXTOOLKITBOT            ║
-║  ➤ CYBER & HACKER UTILITIES  ║
-║                              ║
-║ @URLXSHRTNERBOT              ║
-║  ➤ FAST & SECURE URL SHORTENER║
-║                              ║
-║ @IMAGEXHOSTERBOT             ║
-║  ➤ IMAGE UPLOAD & HOSTING     ║
-║                              ║
-║ @INSTAXDOWLODERBOT           ║
-║  ➤ INSTAGRAM MEDIA DOWNLOADER ║
-║                              ║
-║ @Thumbnailxdownloaderbot     ║
-║  ➤ YOUTUBE THUMBNAIL GRABBER  ║
-║                              ║
-║ @Tikdowloderbot              ║
-║  ➤ TIKTOK NO-WATERMARK VIDEOS ║
-║                              ║
-║ @ForwardxTagremoverbot       ║
-║  ➤ FORWARD TAG REMOVER        ║
-║                              ║
-║ @Githubrepo_to_zipdowloderbot║
-║  ➤ GITHUB REPO DOWNLOADER     ║
-║                              ║
-║ @EDITING_MODS_APKSBOT        ║
-║  ➤ MODS EDITING APPS BOT      ║
-╠══════════════════════════════╣
-║ ⚡ **STATUS:** ACTIVE          ║
-║ 🌑 **MODE:** DARK CYBER        ║
-║ 🔜 **MORE:** COMING SOON       ║
-╠══════════════════════════════╣
-║ ✨ **CREATED BY**              ║
-║    → @ZAMINTRICKS            ║
-╚══════════════════════════════╝
-"""
+█▓▒░  OFFICIAL BOT NETWORK  ░▒▓█
+        DARK • CYBER • PRO
+━━━━━━━━━━━━━━━━━━━━━━━
+⚠ POWERED TELEGRAM BOTS ⚠
+━━━━━━━━━━━━━━━━━━━━━━━
 
-# ===== USER STATE (to remember selected tool) =====
-# We'll use context.user_data to store the chosen tool for each user
+⟢ @ALL_SOCIAL_DOWLODEDRBOT
+⟿ ALL SOCIAL MEDIA DOWNLOADER
+
+⟢ @GOOGLEXPLAYSZAMINBOT
+⟿ GOOGLE PLAY TOOLS & INFO
+
+⟢ @CYBERXTOOLKITBOT
+⟿ CYBER & HACKER UTILITIES
+
+⟢ @URLXSHORTNERBOT
+⟿ FAST & SECURE URL SHORTENER
+
+⟢ @IMAGEXHOSTERBOT
+⟿ IMAGE UPLOAD & HOSTING
+
+⟢ @INSTAXDOWLODERBOT
+⟿ INSTAGRAM MEDIA DOWNLOADER
+
+⟢ @Thumbnailxdowloderbot
+⟿ YOUTUBE THUMBNAIL GRABBER
+
+⟢ @Tikdowloderbot
+⟿ TIKTOK NO-WATERMARK VIDEOS
+
+⟢ @ForwardxTagremoverbot
+⟿ FORWARD TAG REMOVER
+
+⟢ @Githubrepo_to_zipdowloderbot
+⟿ GITHUB REPO DOWLODER
+
+⟢ @EDITING_MODS_APKSBOT
+⟿ MODS EDITING APPS BOT
+━━━━━━━━━━━━━━━━━━━━━━━
+⚙ STATUS : ACTIVE
+⚙ MODE   : DARK CYBER
+⚙ MORE   : COMING SOON
+━━━━━━━━━━━━━━━━━━━━━━━
+
+☠ CREATED BY ➜ @ZAMINTRICKS
+⚡ JOIN • USE • DOMINATE
+━━━━━━━━━━━━━━━━━━━━━━━
+"""
 
 # ===== START COMMAND =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [InlineKeyboardButton("🎨 Colorize", callback_data="tool_colorize"),
-         InlineKeyboardButton("🧹 RemoveBG", callback_data="tool_removebg")],
-        [InlineKeyboardButton("🔄 Restore", callback_data="tool_restore"),
-         InlineKeyboardButton("📈 Upscale", callback_data="tool_upscale")],
-        [InlineKeyboardButton("📢 Join Channel", url=CHANNEL_LINK),
-         InlineKeyboardButton("🤖 More Bots", callback_data="show_network")]
+        [InlineKeyboardButton("🖼️ Remove Background", callback_data="remove_bg")],
+        [InlineKeyboardButton("📢 Join Channel", url=CHANNEL_LINK)],
+        [InlineKeyboardButton("🤖 More Bots", callback_data="show_network")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(WELCOME_TEXT, reply_markup=reply_markup)
@@ -141,195 +153,121 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    data = query.data
-
-    if data.startswith("tool_"):
-        # Store selected tool in user_data
-        tool = data.replace("tool_", "")
-        context.user_data["selected_tool"] = tool
-        tool_names = {
-            "colorize": "🎨 Colorize",
-            "removebg": "🧹 Remove Background",
-            "restore": "🔄 Restore Photo",
-            "upscale": "📈 Upscale Image"
-        }
+    if query.data == "remove_bg":
         await query.edit_message_text(
-            f"🖼️ Send me an image for **{tool_names.get(tool, tool)}**.\n\n👇 Just upload a photo and I'll process it.",
+            "📸 **Send me an image** and I'll remove its background instantly!\n\n👇 Just upload a photo.",
             parse_mode="Markdown"
         )
-
-    elif data == "show_network":
+    
+    elif query.data == "show_network":
         keyboard = [
             [InlineKeyboardButton("📢 Join Channel", url=CHANNEL_LINK)],
-            [InlineKeyboardButton("🖼️ Back to Tools", callback_data="back_to_menu")],
+            [InlineKeyboardButton("🖼️ Remove Background", callback_data="remove_bg")],
             [InlineKeyboardButton("👨‍💻 Developer", url=DEV_URL)]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(BOT_NETWORK_TEXT, reply_markup=reply_markup, parse_mode="Markdown")
+        await query.edit_message_text(BOT_NETWORK_TEXT, reply_markup=reply_markup)
 
-    elif data == "back_to_menu":
-        keyboard = [
-            [InlineKeyboardButton("🎨 Colorize", callback_data="tool_colorize"),
-             InlineKeyboardButton("🧹 RemoveBG", callback_data="tool_removebg")],
-            [InlineKeyboardButton("🔄 Restore", callback_data="tool_restore"),
-             InlineKeyboardButton("📈 Upscale", callback_data="tool_upscale")],
-            [InlineKeyboardButton("📢 Join Channel", url=CHANNEL_LINK),
-             InlineKeyboardButton("🤖 More Bots", callback_data="show_network")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(WELCOME_TEXT, reply_markup=reply_markup)
+# ===== PROGRESS SIMULATION FUNCTION =====
+async def update_progress(message, percent, step_text):
+    # Progress bar with gradient style (█ = full, ░ = empty)
+    filled = percent // 10  # 10% per block, total 10 blocks
+    bar = "█" * filled + "░" * (10 - filled)
+    text = f"""🤖 Processing your request...
 
-# ===== PROCESS IMAGES =====
+[{bar}] {percent}%
+Step {percent//25 + 1} of 4: {step_text}"""
+    await message.edit_text(text)
+
+# ===== PROCESS IMAGES WITH ANIMATED PROGRESS =====
 async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Check if user selected a tool
-    tool = context.user_data.get("selected_tool")
-    if not tool:
-        await update.message.reply_text("❌ Please select a tool first using the buttons.")
-        return
+    # Send initial progress message
+    progress_msg = await update.message.reply_text(
+        "🤖 Processing your request...\n\n[██░░░░░░░░░] 10%\nStep 1 of 4: Uploading image..."
+    )
 
-    # Notify user
-    await update.message.reply_text("⏳ Processing image...\nAI magic in progress. Please wait...")
+    # Define progress stages: (percent, step_text, delay)
+    stages = [
+        (10, "Uploading image...", 0.8),
+        (25, "Analyzing image...", 0.8),
+        (50, "Processing data...", 0.8),
+        (75, "Enhancing result...", 0.8),
+        (90, "Finalizing...", 0.8),
+        (100, "Completed", 0.8),
+    ]
 
-    # Get image file
+    # Start the background API call
     photo_file = await update.message.photo[-1].get_file()
     image_data = BytesIO()
     await photo_file.download_to_memory(image_data)
     image_data.seek(0)
 
-    # Process based on tool
-    try:
-        if tool == "removebg":
-            result_image = await remove_background(image_data)
-        elif tool == "colorize":
-            result_image = await colorize_image(image_data)
-        elif tool == "restore":
-            result_image = await restore_image(image_data)
-        elif tool == "upscale":
-            result_image = await upscale_image(image_data)
-        else:
-            await update.message.reply_text("❌ Unknown tool.")
-            return
+    # Create a task for API call
+    api_task = asyncio.create_task(call_remove_bg_api(image_data))
 
-        if result_image:
-            # Success caption
-            caption = (
-                "✔ Process Completed Successfully\n\n"
-                "Your enhanced image is ready.\n"
-                "Clean cut. High quality. Zero compromise.\n\n"
-                "Stay connected:\n"
-                f"Developer — {DEV_CONTACT}\n"
-                f"Channel — @ZAMINTRICKS"
-            )
-            # Buttons after processing: Process Another + Join Channel
-            keyboard = [
-                [InlineKeyboardButton("🔄 Process Another", callback_data="back_to_menu")],
-                [InlineKeyboardButton("📢 Join Channel", url=CHANNEL_LINK)]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
+    # Simulate progress
+    for percent, step_text, delay in stages:
+        if percent > 10:  # Already sent 10% initially
+            await asyncio.sleep(delay)
+            await update_progress(progress_msg, percent, step_text)
 
-            await update.message.reply_photo(
-                photo=result_image,
-                filename="output.png",
-                caption=caption,
-                reply_markup=reply_markup
-            )
-        else:
-            await update.message.reply_text("❌ Processing failed. Please try again later.")
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        await update.message.reply_text("❌ An error occurred. Please try again later.")
+    # Progress reached 100%, now wait for API result if not finished
+    response = await api_task
 
-    # Clear selected tool so user must choose again
-    context.user_data.pop("selected_tool", None)
+    # Delete or edit progress message to fade out (delete it)
+    await progress_msg.delete()
 
-# ===== TOOL FUNCTIONS =====
-async def remove_background(image_data):
-    response = requests.post(
+    if response and response.status_code == 200:
+        caption = (
+            "✔ Process Completed Successfully\n\n"
+            "Your background-free image is ready.\n"
+            "Clean cut. High quality. Zero compromise.\n\n"
+            "Stay connected:\n"
+            f"Developer — {DEV_CONTACT}\n"
+            f"Channel — @ZAMINTRICKS"
+        )
+        keyboard = [
+            [InlineKeyboardButton("🔄 Remove Another", callback_data="remove_bg")],
+            [InlineKeyboardButton("📢 Join Channel", url=CHANNEL_LINK)]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await update.message.reply_photo(
+            photo=BytesIO(response.content),
+            filename="no_bg.png",
+            caption=caption,
+            reply_markup=reply_markup
+        )
+    else:
+        error_msg = "Unknown error"
+        if response and response.status_code != 200:
+            try:
+                error_msg = response.json().get('errors', [{}])[0].get('title', 'Unknown error')
+            except:
+                pass
+        await update.message.reply_text(f"❌ Failed: {error_msg}")
+
+# ===== API CALL FUNCTION =====
+async def call_remove_bg_api(image_data):
+    loop = asyncio.get_event_loop()
+    # Run requests.post in a thread to avoid blocking
+    return await loop.run_in_executor(None, lambda: requests.post(
         REMOVE_BG_URL,
         files={'image_file': image_data},
         data={'size': 'auto'},
         headers={'X-Api-Key': REMOVE_BG_API_KEY},
-    )
-    if response.status_code == 200:
-        return BytesIO(response.content)
-    else:
-        return None
-
-async def colorize_image(image_data):
-    # Use Replicate's DDColor model
-    client = replicate.Client(api_token=REPLICATE_API_TOKEN)
-    # Save image to temporary file or pass as URL? Replicate can accept file uploads.
-    # We'll upload to a temporary hosting or use bytes. For simplicity, we'll use a temporary file.
-    import tempfile
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-        tmp.write(image_data.getvalue())
-        tmp_path = tmp.name
-    try:
-        output = client.run(
-            "cjwb0/ddcolor:dee7a1f7e6f8c7e7c8f8c7e7c8f8c7e7c8f8c7e7",
-            input={"image": open(tmp_path, "rb")}
-        )
-        # output is a file URL
-        if output:
-            response = requests.get(output)
-            if response.status_code == 200:
-                return BytesIO(response.content)
-    finally:
-        os.unlink(tmp_path)
-    return None
-
-async def restore_image(image_data):
-    # GFPGAN for face restoration
-    client = replicate.Client(api_token=REPLICATE_API_TOKEN)
-    import tempfile
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-        tmp.write(image_data.getvalue())
-        tmp_path = tmp.name
-    try:
-        output = client.run(
-            "tencentarc/gfpgan:9283608cc6b7be6b65a8e449c8d6c7c9e5a9a5e9",
-            input={"img": open(tmp_path, "rb")}
-        )
-        if output:
-            response = requests.get(output)
-            if response.status_code == 200:
-                return BytesIO(response.content)
-    finally:
-        os.unlink(tmp_path)
-    return None
-
-async def upscale_image(image_data):
-    # Real-ESRGAN upscaling
-    client = replicate.Client(api_token=REPLICATE_API_TOKEN)
-    import tempfile
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-        tmp.write(image_data.getvalue())
-        tmp_path = tmp.name
-    try:
-        output = client.run(
-            "nightmareai/real-esrgan:42fed1c4974146d4d2414e2be2c5277c7fcf05f0",
-            input={"image": open(tmp_path, "rb")}
-        )
-        if output:
-            response = requests.get(output)
-            if response.status_code == 200:
-                return BytesIO(response.content)
-    finally:
-        os.unlink(tmp_path)
-    return None
+    ))
 
 # ===== MAIN =====
 def main():
     if not BOT_TOKEN:
         raise ValueError("BOT_TOKEN not set!")
-    if not REPLICATE_API_TOKEN:
-        logger.warning("REPLICATE_API_TOKEN not set. Colorize, Restore, Upscale will not work.")
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(MessageHandler(filters.PHOTO, handle_image))
     app.add_handler(CallbackQueryHandler(button_callback))
-    logger.info("🤖 Multi‑Tool Image Bot is starting...")
+    logger.info("🤖 Bot is starting...")
     app.run_polling()
 
 if __name__ == "__main__":
