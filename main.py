@@ -5,17 +5,22 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 import requests
 from io import BytesIO
 
-# ===== CONFIGURATION (Read from environment variables) =====
-BOT_TOKEN = os.environ.get("BOT_TOKEN")          # Must be set on Railway
-REMOVE_BG_API_KEY = os.environ.get("REMOVE_BG_API_KEY", "F2RnX8kEWsjfoAoP1ezQfQgS")  # Fallback only
+# ===== CONFIGURATION =====
+# Read from environment variables (set on Railway)
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+REMOVE_BG_API_KEY = os.environ.get("REMOVE_BG_API_KEY", "F2RnX8kEWsjfoAoP1ezQfQgS")  # fallback only
 REMOVE_BG_URL = "https://api.remove.bg/v1.0/removebg"
 
 # Your channel and developer info
 CHANNEL_LINK = "https://t.me/ZAMINTRICKS"
-DEV_CONTACT = "@SIGMAXZAMIN"
+DEV_CONTACT = "@SIGMAXZAMIN"  # for display
+DEV_URL = "https://t.me/SIGMAXZAMIN"  # for button link
 
 # ===== LOGGING =====
-logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 
 # ===== START COMMAND =====
@@ -23,7 +28,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Inline keyboard with channel and dev buttons
     keyboard = [
         [InlineKeyboardButton("📢 Join Channel", url=CHANNEL_LINK)],
-        [InlineKeyboardButton("👨‍💻 Developer", url=f"https://t.me/{DEV_CONTACT[1:]}")]
+        [InlineKeyboardButton("👨‍💻 Developer", url=DEV_URL)]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -45,7 +50,11 @@ Just drop an image and watch the magic happen! 🪄
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ➖➖➖➖➖➖➖➖➖➖
 """
-    await update.message.reply_text(welcome_message, reply_markup=reply_markup, parse_mode="Markdown")
+    await update.message.reply_text(
+        welcome_message,
+        reply_markup=reply_markup,
+        parse_mode="Markdown"
+    )
 
 # ===== HELP COMMAND =====
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -83,14 +92,17 @@ async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         if response.status_code == 200:
             # Send the result image back to the user
+            keyboard = [
+                [InlineKeyboardButton("📢 Join Channel", url=CHANNEL_LINK)],
+                [InlineKeyboardButton("👨‍💻 Developer", url=DEV_URL)]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+
             await update.message.reply_photo(
                 photo=BytesIO(response.content),
                 filename="no_bg.png",
                 caption="✅ Background removed successfully!",
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("📢 Join Channel", url=CHANNEL_LINK)],
-                    [InlineKeyboardButton("👨‍💻 Developer", url=f"https://t.me/{DEV_CONTACT[1:]}")]
-                ])
+                reply_markup=reply_markup
             )
         else:
             # Handle API errors
@@ -102,18 +114,20 @@ async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ===== MAIN FUNCTION =====
 def main():
-    # Create the Application
+    # Check if BOT_TOKEN is set
     if not BOT_TOKEN:
-        raise ValueError("No BOT_TOKEN provided. Set it as an environment variable.")
+        raise ValueError("No BOT_TOKEN found! Please set the BOT_TOKEN environment variable.")
+
+    # Create the Application using the builder pattern (correct for v20+)
     app = Application.builder().token(BOT_TOKEN).build()
 
-    # Handlers
+    # Add handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(MessageHandler(filters.PHOTO, handle_image))
 
     # Start the bot
-    print("🤖 Bot is running...")
+    logger.info("🤖 Bot is starting...")
     app.run_polling()
 
 if __name__ == "__main__":
