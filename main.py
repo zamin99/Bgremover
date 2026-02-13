@@ -18,58 +18,63 @@ DEV_URL = "https://t.me/SIGMAXZAMIN"
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ===== WELCOME MESSAGE (Pro Developer Style) =====
+# ===== WELCOME MESSAGE (Your Design) =====
 WELCOME_TEXT = """
-╔══════════════════════════════╗
-║   🔥 **PRO BACKGROUND REMOVER** 🔥  ║
-║       ✨ **DEVELOPER EDITION** ✨    ║
-╠══════════════════════════════╣
-║  ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰   ║
-║                               ║
-║  🚀 **Send any image**         ║
-║  🎯 **Remove background**       ║
-║  ⚡ **Instant result**           ║
-║                               ║
-║  ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰   ║
-║                               ║
-║  👨‍💻 **Developer:** @SIGMAXZAMIN ║
-║  📢 **Channel:** @ZAMINTRICKS   ║
-║                               ║
-║  💡 **Type /help for assistance** ║
-╚══════════════════════════════╝
+╭━━━━━━━━━━━━━━━━━━━━━━╮
+      🚀 PRO BG REMOVER
+╰━━━━━━━━━━━━━━━━━━━━━━╯
+
+➤ Send Any Image  
+➤ AI Detects Subject  
+➤ Background Removed Instantly  
+➤ Get Transparent HD PNG  
+
+━━━━━━━━━━━━━━━━━━━━━━
+⚡ Fast • Clean • Professional
+━━━━━━━━━━━━━━━━━━━━━━
+
+➤ Type /help for commands
 """
 
-# ===== HELP MESSAGE =====
+# ===== HELP MESSAGE (Your Design) =====
 HELP_TEXT = """
-╔══════════════════════════════╗
-║        🆘 **HELP MENU**        ║
-╠══════════════════════════════╣
-║                               ║
-║  **🤖 Bot Commands:**          ║
-║  ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰   ║
-║  • /start - Start the bot     ║
-║  • /help - Show this menu     ║
-║                               ║
-║  **📸 How to Use:**            ║
-║  ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰   ║
-║  1️⃣ Click "Start Removing"     ║
-║  2️⃣ Send any image             ║
-║  3️⃣ Get background-free result ║
-║                               ║
-║  **👨‍💻 Contact Developer:**     ║
-║  ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰   ║
-║  • Telegram: @SIGMAXZAMIN     ║
-║  • Channel: @ZAMINTRICKS      ║
-║  • For issues, bugs, or       ║
-║    suggestions, DM developer  ║
-║                               ║
-║  **⚡ Quick Tips:**             ║
-║  ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰   ║
-║  • Send high-quality images    ║
-║  • Max size: 20MB             ║
-║  • Formats: JPG, PNG, WEBP    ║
-║                               ║
-╚══════════════════════════════╝
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          ⚡ HELP CENTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🤖 COMMANDS
+➜ /start  » Activate Bot
+➜ /help   » View Help Menu
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📸 HOW IT WORKS
+➜ Send any image
+➜ AI removes background
+➜ Get HD transparent PNG
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 FEATURES
+➜ Clean Edge Detection
+➜ Fast Processing
+➜ High-Quality Output
+➜ Secure & Private
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 REQUIREMENTS
+➜ Max Size: 20MB
+➜ Formats: JPG • PNG • WEBP
+➜ Use high-resolution images
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👨‍💻 SUPPORT
+➜ Developer: @SIGMAXZAMIN
+➜ Channel: @ZAMINTRICKS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
 
 # ===== BOT NETWORK MESSAGE (Cyber Style) =====
@@ -122,7 +127,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🤖 More Bots", callback_data="show_network")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(WELCOME_TEXT, reply_markup=reply_markup, parse_mode="Markdown")
+    # No parse_mode to preserve special characters
+    await update.message.reply_text(WELCOME_TEXT, reply_markup=reply_markup)
 
 # ===== HELP COMMAND =====
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -131,7 +137,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("📢 Join Channel", url=CHANNEL_LINK)]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(HELP_TEXT, reply_markup=reply_markup, parse_mode="Markdown")
+    await update.message.reply_text(HELP_TEXT, reply_markup=reply_markup)
 
 # ===== CALLBACK HANDLER =====
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -139,7 +145,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     if query.data == "remove_bg":
-        await query.edit_message_text("📸 **Send me the next image to remove background!**\n\n👇 Just upload a photo and I'll do the rest.", parse_mode="Markdown")
+        await query.edit_message_text("📸 Send me the next image to remove background!\n\n👇 Just upload a photo and I'll do the rest.")
     
     elif query.data == "show_network":
         keyboard = [
@@ -152,8 +158,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ===== PROCESS IMAGES =====
 async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Notify user
-    await update.message.reply_text("⏳ **Removing background...** Please wait.", parse_mode="Markdown")
+    # Processing message
+    await update.message.reply_text(
+        "⏳ Processing image...\nAI background removal in progress."
+    )
 
     # Get image
     photo_file = await update.message.photo[-1].get_file()
@@ -170,6 +178,15 @@ async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             headers={'X-Api-Key': REMOVE_BG_API_KEY},
         )
         if response.status_code == 200:
+            # Success caption
+            caption = (
+                "✔ Process Completed Successfully\n\n"
+                "Your background-free image is ready.\n"
+                "Clean cut. High quality. Zero compromise.\n\n"
+                "Stay connected:\n"
+                "Developer — @SIGMAXZAMIN\n"
+                "Channel — @ZAMINTRICKS"
+            )
             # Buttons after successful removal: Remove Another + Join Channel
             keyboard = [
                 [InlineKeyboardButton("🔄 Remove Another", callback_data="remove_bg")],
@@ -180,16 +197,15 @@ async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_photo(
                 photo=BytesIO(response.content),
                 filename="no_bg.png",
-                caption=f"╔══════════════════════════════╗\n║   ✅ **BACKGROUND REMOVED**   ║\n╠══════════════════════════════╣\n║ 👨‍💻 Dev: @SIGMAXZAMIN        ║\n║ 📢 Channel: @ZAMINTRICKS     ║\n╚══════════════════════════════╝",
-                reply_markup=reply_markup,
-                parse_mode="Markdown"
+                caption=caption,
+                reply_markup=reply_markup
             )
         else:
             error_msg = response.json().get('errors', [{}])[0].get('title', 'Unknown error')
-            await update.message.reply_text(f"❌ **Failed:** {error_msg}", parse_mode="Markdown")
+            await update.message.reply_text(f"❌ Failed: {error_msg}")
     except Exception as e:
         logger.error(f"Error: {e}")
-        await update.message.reply_text("❌ **An error occurred.** Please try again later.", parse_mode="Markdown")
+        await update.message.reply_text("❌ An error occurred. Please try again later.")
 
 # ===== MAIN =====
 def main():
